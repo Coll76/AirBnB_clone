@@ -1,19 +1,18 @@
 #!/usr/bin/python3
-"""
-class BaseModel acts as a base class from hich other classes il inherit 
-"""
 
 import uuid
 import cmd
 from datetime import datetime, timedelta, timezone
 import json
-from file_storage import storage
+from models import storage
+
+"""
+class BaseModel ill act as the base class from hich other classes ill inherit
+and it provides a uuid for each instance created
+"""
 
 
 class BaseModel:
-    """
-    ___init__ is used for initialization
-    """
     my_number = 8
     name = "Model"
     def __init__(self, *args, **kwargs):
@@ -40,9 +39,7 @@ class BaseModel:
         self.id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
-
-        if not kwargs:
-            storage.new(self)
+        storage.new(self)
         """
         __str__ string representation of objects of class
         """
@@ -50,7 +47,7 @@ class BaseModel:
         """
         informal string representation of object
         """
-        return f"[BaseModel] ({self.id}) {self.__dict__}"
+        return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
         """
         updates the public instance attribute updated_at with the current datetime
         """
@@ -59,7 +56,7 @@ class BaseModel:
         update updated_at with the current datetime
         """
         self.updated_at = datetime.now()
-        storage.save(self)
+        storage.save()
         """
         returns a dictionary containing all keys/values of __dict__ of the instance
         """

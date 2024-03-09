@@ -1,68 +1,65 @@
 #!/usr/bin/python3
+"""
+Now we can recreate a BaseModel from another one by using a dictionary representation
+class FileStorage that serializes instances to a JSON
+file and deserializes JSON file to instances
+"""
 
 import json
 
-"""
-class FileStorage that serializes instances to a JSON file and deserializes JSON file to instances
-"""
-
-
 class FileStorage:
     """
-    Serialization and deserialization
+    Private class attributes:
+        __file_path: string - path to the JSON file (ex: file.json)
+        __objects: dictionary - empty but will store all objects by <class name>.id
+        (ex: to store a BaseModel object with id=12121212, the key will be BaseModel.12121212)
     """
-    __file_path = None
+    __file_path = 'file.json'
     __objects = {}
 
-    """
-    returns the dictionary __objects
-    """
-    def __init__(self):
-        FileStorage.__file_path = "file.json"
-    def all(self):
-        """
-        return dictionary __objects
-        """
-        return FileStorage.__objects
     """
     sets in __objects the obj with key <obj class name>.id
     """
     def new(self, obj):
         """
-        creates a hey according to <obj class name>.id
-        so necessity to obtain class name using .__class__.__name__
-        necessity to obtain obj id using getattr
-        creation of key based on specification <obj class name>.id so long obj has an id
-        combination of class name and obj id to form a key
-        Assigning the object obj to dictionary __objects based on key e have created
+        sets in __objects the obj with key <obj class name>.id
+        <obj class name>.id  create this using fstring
+        obtain the obj id
+        obtain the class name of obj using .__class__.__name___
         """
+        obj_id = obj.id
         class_name = obj.__class__.__name__
-        obj_id = getattr(obj, 'id')
+        key = f"{class_name}.{obj_id}"
+        self.__objects[key] = obj.to_dict()
 
-        if obj_id is not None:
-            key = f"{class_name}.{obj_id}"
-            self.__objects[key] = obj
-
-        """
-        serializes __objects to the JSON file (path: __file_path)
-        """
+    """
+    serializes __objects to the JSON file(path: __file_path)
+    """
     def save(self):
         """
-        json.dump is used to write JSON data to a file-like object based on the path self.__path
-        serializes __objects to the JSON file (path: __file_path)
-        e shall write in JSON file by name file after opening using with open()
+        serialization process using json.dump
+        save the objects to JSON file
         """
-        with open(self.__path, 'w') as file:
-            json.dump(self.__objects, file)
+        with open(FileStorage.__file_path, 'w') as file:
+            json.dump(FileStorage.__objects, file)
 
         """
-        deserializes the JSON file to __objects (only if the JSON file (__file_path)
-        exists ; otherwise, do nothing. If the file doesn’t exist, no exception should be raised)
+        deserializes the JSON file to __objects
         """
     def reload(self):
         """
-        deserialize JSON file we shall use json.load to read data from JSON file as ell as deserialize it
-        Then update the self.__objects to keep it up to date ith the JSON content
+        deserializes the JSON file to __objects
+        only if the JSON file (__file_path) exists
+        Loads objects from JSON file
         """
-        with open(self.__path, 'r') as file:
-            self.__objects = json.load(file)
+        with open(FileStorage.__file_path, 'r') as file:
+            FileStorage.__objects = json.load(file)
+
+        """
+        get all objects of __object directory
+        """
+    def all(self):
+        """
+        returns the dictionary __objects
+        """
+        return FileStorage.__objects

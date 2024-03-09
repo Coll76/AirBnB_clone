@@ -9,6 +9,7 @@ command interpreter should implement:
     an empty line + ENTER shouldn’t execute anything
 """
 
+from models.base_model import BaseModel
 import cmd
 
 
@@ -45,6 +46,24 @@ class HBNBCommand(cmd.Cmd):
         returns False
         """
         return False
+    """
+    Creates a new instance of BaseModel
+    saves it (to the JSON file) and prints the id. Ex: $ create BaseModel
+    If the class name is missing, print ** class name missing ** (ex: $ create)
+    If the class name doesn’t exist, print ** class doesn't exist ** (ex: $ create MyModel)
+    """
+    def do_create(self):
+        """
+        Creates a new instance of BaseModel
+        """
+        if not BaseModel:
+            print("** class name missing **")
+        if BaseModel is None:
+            print("print ** class doesn't exist **")
+
+        my_inst = BaseModel()
+        my_inst.save()
+        print(my_inst.id)
 
 
 if __name__ == '__main__':
