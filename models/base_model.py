@@ -6,32 +6,35 @@ from datetime import datetime, timedelta, timezone
 import json
 from models import storage
 
-"""
-class BaseModel ill act as the base class from
-hich other classes ill inherit
-and it provides a uuid for each instance created
-"""
-
 
 class BaseModel:
+    """
+    class BaseModel serves as the base class from
+    which other classes inherit.
+    It provides a UUID for each instance created.
+
+    Parameters:
+        my_number: A class attribute with a default value of 8
+        name: A class attribute with a default value of "Model"
+    """
+
     my_number = 8
     name = "Model"
 
-    """
-    class constructor
-    """
     def __init__(self, *args, **kwargs):
         """
+        Initializes a new instance of the BaseModel class.
+
         Parameters:
-            id: string - assign with an uuid when an instance is created
-            you can use uuid.uuid4() to generate unique id
-            but don’t forget to convert to a string
-            the goal is to have unique id for each BaseModel
-            created_at: datetime - assign with the current
-            datetime when an instance is created
-            updated_at: datetime - assign with the current
-            datetime when an instance is created
-            and it will be updated every time you change your object
+            id: string assign with an uuid when an instance is created
+                you can use uuid.uuid4() to generate unique id
+                but don’t forget to convert to a string
+                the goal is to have unique id for each BaseModel
+                created_at: datetime - assign with the current
+                datetime when an instance is created
+                updated_at: datetime - assign with the current
+                datetime when an instance is created
+                and it will be updated every time you change your object
         """
         if kwargs:
             for key, value in kwargs.items():
@@ -52,28 +55,20 @@ class BaseModel:
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
         storage.new(self)
-        """
-        __str__ string representation of objects of class
-        """
+
     def __str__(self):
         """
         informal string representation of object
         """
         return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
-        """
-        updates the public instance attribute updated_at
-        with the current datetime
-        """
+
     def save(self):
         """
         update updated_at with the current datetime
         """
         self.updated_at = datetime.now()
         storage.save()
-        """
-        returns a dictionary containing all keys/values
-        of __dict__ of the instance
-        """
+
     def to_dict(self):
         """
         returns a dictionary containing all keys/values of
