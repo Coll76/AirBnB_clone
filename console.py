@@ -160,38 +160,14 @@ class HBNBCommand(cmd.Cmd):
             if my_class is not None:
                 storage.reload()
                 my_inst = storage.all()
-                my_listinst = [str(instance) for instance in my_inst.values()]
+                #my_inst = storage.all()
+                #my_listinst = [str(instance) for instance in my_inst.values()]
+                my_listinst = [instance for instance in my_inst.values()]
                 print(my_listinst)
             else:
                 print("** class doesn't exist **")
         except KeyError:
             print("** class doesn't exist **")
-
-        def update(self, line):
-        """
-        Updates an instance based on the class name and id by
-        adding or updating attribute
-        (save the change into the JSON file)
-        Ex: $ update BaseModel 1234-1234-1234 email "aibnb@mail.com"
-        Usage: update <class name> <id> <attribute name> "<attribute value>"
-        Only one attribute can be updated at the time
-        You can assume the attribute name is valid (exists for this model)
-        The attribute value must be casted to the attribute type
-        If the class name is missing, print ** class name missing ** (ex: $ update)
-        If the class name doesn’t exist, print ** class doesn't exist ** (ex: $ update MyModel)
-        If the id is missing, print ** instance id missing ** (ex: $ update BaseModel)
-        If the instance of the class name doesn’t exist for the id,
-        print ** no instance found ** (ex: $ update BaseModel 121212)
-        If the attribute name is missing, print ** attribute name missing ** (ex: $ update BaseModel existing-id)
-        If the value for the attribute name doesn’t exist, print ** value missing **
-        All other arguments should not be used (Ex: $ update BaseModel
-        1234-1234-1234 email "aibnb@mail.com" first_name "Betty" = $ update
-        BaseModel 1234-1234-1234 email "aibnb@mail.com)
-        id, created_at and updated_at cant’ be updated. You can assume
-        they won’t be passed in the update command
-        Only “simple” arguments can be updated: string, integer and float.
-        You can assume nobody will try to update list of ids or datetime
-        """
 
 
 if __name__ == '__main__':

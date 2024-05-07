@@ -4,8 +4,8 @@ Now we can recreate a BaseModel from another one by using a dictionary represent
 class FileStorage that serializes instances to a JSON
 file and deserializes JSON file to instances
 """
-
 import json
+from models.base_model import BaseModel
 
 class FileStorage:
     """
@@ -38,20 +38,15 @@ class FileStorage:
         key = f"{class_name}.{obj_id}"
         self.__objects[key] = obj.to_dict()
 
-    """
-    serializes __objects to the JSON file(path: __file_path)
-    """
     def save(self):
         """
         serialization process using json.dump
         save the objects to JSON file
         """
         with open(FileStorage.__file_path, 'w') as file:
-            json.dump(FileStorage.__objects, file)
+            json.dump(
+                    {k: v for k, v in FileStorage.__objects.items()}, file)
 
-        """
-        deserializes the JSON file to __objects
-        """
     def reload(self):
         """
         deserializes the JSON file to __objects
@@ -59,4 +54,6 @@ class FileStorage:
         Loads objects from JSON file
         """
         with open(FileStorage.__file_path, 'r') as file:
-            FileStorage.__objects = json.load(file)
+            data = json.load(file)
+            FileStorage.__objects = {
+                    k:v for k, v in data.items()}
