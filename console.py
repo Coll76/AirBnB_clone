@@ -149,12 +149,8 @@ class HBNBCommand(cmd.Cmd):
             print(["{}".format(str(v))
                 for _, v in inst_objs.items()])
             return
-
+    """
     def do_update(self, line: str):
-        """
-        Updates an instance based on the class name and id by
-        adding or updating attribute (save the change into the JSON file)
-        """
         args = line.split()
         if not validate_classname(args, check_id=True):
             return
@@ -194,6 +190,7 @@ class HBNBCommand(cmd.Cmd):
 
         storage.save()
 
+    """
 def validate_classname(args, check_id=False):
     """
     Runs checks on args to validate classname entry.
