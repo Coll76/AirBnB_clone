@@ -5,7 +5,7 @@ amenity module defines class Amenity
 from models.base_model import BaseModel
 
 
-class Amenity(self):
+class Amenity(BaseModel):
     """
     Represents all amenities
     """
