@@ -6,6 +6,8 @@ file and deserializes JSON file to instances
 """
 import json
 from models.base_model import BaseModel
+from models.user import User
+
 
 class FileStorage:
     """
@@ -23,9 +25,6 @@ class FileStorage:
         """
         return FileStorage.__objects
 
-    """
-    sets in __objects the obj with key <obj class name>.id
-    """
     def new(self, obj):
         """
         sets in __objects the obj with key <obj class name>.id
@@ -53,7 +52,20 @@ class FileStorage:
         only if the JSON file (__file_path) exists
         Loads objects from JSON file
         """
+        current_classes = {
+                'BaseModel': BaseModel,
+                'User': User,
+                'Amenity': Amenity,
+                'City': City,
+                'State': State,
+                'Place': Place,
+                'Review': Review
+                }
+
         with open(FileStorage.__file_path, 'r') as file:
             data = json.load(file)
-            FileStorage.__objects = {
-                    k:v for k, v in data.items()}
+            for k, v in data.items():
+                class_nam, obj_id = k.split(".")
+                if class_nam in current_classes:
+                    class_obj = current_classes[class_nam]
+                    FileStorage.__objects[k] = class_obj(**v)
