@@ -1,5 +1,9 @@
 #!/usr/bin/python3
+"""
+place module defines Place class
+"""
 from models.base_model import BaseModel
+
 
 class Place(self):
     """
