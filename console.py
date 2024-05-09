@@ -8,13 +8,15 @@ command interpreter should implement:
     a custom prompt: (hbnb)
     an empty line + ENTER shouldn’t execute anything
 """
-
+import re
+import json
 import uuid
 import shlex
 import sys
 from models import storage
 from models.base_model import BaseModel
 import cmd
+current_classes = {'BaseModel': BaseModel}
 
 
 class HBNBCommand(cmd.Cmd):
@@ -34,45 +36,48 @@ class HBNBCommand(cmd.Cmd):
         help for quit
         """
         print("Quit command to exit the program\n")
-    """
-    EOF
-    """
+
     def do_EOF(self, line):
         """
         signifies end of Command line Interface
         """
         return True
-    """
-    remove implementation of cmd.emptyline
-    """
+
     def emptyline(self):
         """
+        remove implementation of cmd.emptyline
         returns False
         """
         return False
-    """
-    Creates a new instance of BaseModel
-    saves it (to the JSON file) and prints the id. Ex: $ create BaseModel
-    If the class name is missing, print ** class name missing ** (ex: $ create)
-    If the class name doesn’t exist, print ** class doesn't exist ** (ex: $ create MyModel)
-    """
+    def validate_classname(args, check_id=False):
+        """
+        Runs checks on args to validate classname entry.
+        """
+        if len(args) < 1:
+            print("** class name missing **")
+            return False
+        if args not in current_classes.keys():
+            print("** class doesn't exist **")
+            return False
+        if len(args) < 2 and check_id:
+            print("** instance id missing **")
+            return False
+        return True
+
     def do_create(self, line):
         """
         Creates a new instance of BaseModel
+        saves it (to the JSON file) and prints the id. Ex: $ create BaseModel
+        If the class name is missing, print ** class name missing ** (ex: $ create)
+        If the class name doesnt exist, print ** class doesn't exist ** (ex: $ create MyModel)
         """
         args = line.split()
-        if not args:
-            print("** class name missing **")
+        if not validate_classname(args, check_id=False):
             return
-        class_name = args[0]
-        try:
-            my_class = globals().get(class_name, None)
-            if my_class is not None:
-                my_inst = my_class()
-                my_inst.save()
-                print(my_inst.id)
-        except KeyError:
-            print("** class doesn't exist **")
+
+        new_obj = current_classes[args[0]]()
+        new_obj.save()
+        print(new_obj.id)
 
     def do_show(self, line):
         """
@@ -86,31 +91,17 @@ class HBNBCommand(cmd.Cmd):
         print ** no instance found ** (ex: $ show BaseModel 121212)
         """
         args = line.split()
-        if not args:
-            print("** class name missing **")
+        if not validate_classname(args, check_id=True):
             return
-        if len(args) < 2:
-            print("** instance id missing **")
-            return
+        inst_obj = storage.all()
+        key = f"{args[0]}.{args[1]}"
+        inst = inst_obj.get(key, None)
 
-        class_name = args[0]
-        ins_id = args[1]
-        try:
-            my_class = globals().get(class_name, None)
-            if my_class is not None:
-                my_inst = my_class()
-                my_inst.id = ins_id
-                if hasattr(my_inst, 'id') and str(my_inst.id) == ins_id:
-                    print(str(my_inst))
-                else:
-                    print("** no instance found")
-            else:
-                print("** class doesn't exist **")
-
-        except KeyError:
-            print("** class name missing **")
+        if inst is None:
             print("** no instance found **")
+            return
 
+        print(inst)
 
     def do_destroy(self, line):
         """
@@ -122,27 +113,20 @@ class HBNBCommand(cmd.Cmd):
         If the instance of the class name doesn’t exist for the id, print ** no instance found ** (ex: $ destroy BaseModel 121212)
         """
         args = line.split()
-        if not args:
-            print("** class name missing **")
-            return
-        if len(args) < 2:
-            print("** instance id missing **")
+
+        if not validate_classname(args, check_id=True):
             return
 
-        class_name = args[0]
-        ins_id = args[1]
-        try:
-            my_inst = globals().get(class_name, None)
-            if my_inst is not None:
-                if hasattr(my_inst, 'id'):
-                    del my_inst
-                else:
-                    print("** no instance found **")
-            else:
-                print("** class doesn't exist **")
-        except KeyError:
-            print("** class doesn't exist **")
+        inst_obj = storage.all()
+        key = f"{args[0]}.{args[1]}"
+        inst = inst_obj.get(key, None)
+
+        if inst is None:
             print("** no instance found **")
+
+        del(inst_obj[key])
+
+        storage.save()
 
     def do_all(self, line):
         """
@@ -151,23 +135,127 @@ class HBNBCommand(cmd.Cmd):
         If the class name doesn’t exist, print ** class doesn't exist **
         """
         args = line.split()
-        if not args:
+        inst_objs = storage.all()
+
+        if len(args) < 1:
+            print(["{}".format(str(v)) for k, v in inst_objs.items()])
+            return
+
+        if args[0] not in current_classes.keys():
             print("** class doesn't exist **")
             return
-        class_name = args[0]
-        try:
-            my_class = globals().get(class_name, None)
-            if my_class is not None:
-                storage.reload()
-                my_inst = storage.all()
-                #my_inst = storage.all()
-                #my_listinst = [str(instance) for instance in my_inst.values()]
-                my_listinst = [instance for instance in my_inst.values()]
-                print(my_listinst)
-            else:
-                print("** class doesn't exist **")
-        except KeyError:
-            print("** class doesn't exist **")
+
+        else:
+            print(["{}".format(str(v))
+                for _, v in inst_objs.items()])
+            return
+
+    def do_update(self, line: str):
+        """
+        Updates an instance based on the class name and id by
+        adding or updating attribute (save the change into the JSON file)
+        """
+        args = line.split()
+        if not validate_classname(args, check_id=True):
+            return
+
+        inst_obj = storage.all()
+        key = "{}.{}".format(args[0], args[1])
+        inst = inst_obj.get(key, None)
+
+        if inst is None:
+            print("** no instance found **")
+            return
+
+        match_json = re.findall(r"{.*}", line)
+
+        if match_json:
+            payload = None
+            try:
+                payload: dict = json.loads(match_json[0])
+            except Exception:
+                print("** invalid syntax **")
+                return
+            for k, v in payload.items():
+                setattr(inst, k, v)
+            storage.save()
+            return
+
+        if not validate_attrs(args):
+            return
+
+        first_attr = re.findall(r"^[\"\'](.*?)[\"\']", args[3])
+        if first_attr:
+            setattr(inst, args[2], first_attr[0])
+        
+        else:
+            value_list = args[3].split()
+            setattr(inst, args[2], parse_str(value_list[0]))
+
+        storage.save()
+
+def validate_classname(args, check_id=False):
+    """
+    Runs checks on args to validate classname entry.
+    """
+    if len(args) < 1:
+        print("** class name missing **")
+        return False
+    if args[0] not in current_classes.keys():
+        print("** class doesn't exist **")
+        return False
+    if len(args) < 2 and check_id:
+        print("** instance id missing **")
+        return False
+    return True
+
+def validate_attrs(args):
+    """
+    checks on args to validate classname attributes and values
+    """
+    if len(args) < 3:
+        print("** attribute name missing **")
+        return False
+    if len(args) < 4:
+        print("** value missing **")
+        return False
+    return True
+
+def is_float(x):
+    """
+    Checks if `x` is float.
+    """
+    try:
+        a = float(x)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return True
+
+def is_int(x):
+    """
+    Checks if `x` is int.
+    """
+    try:
+        a = float(x)
+        b = int(a)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return a == b
+
+def parse_str(arg):
+    """
+    Parse `arg` to an `int`, `float` or `string`.
+    """
+    parsed = re.sub("\"", "", arg)
+
+    if is_int(parsed):
+        return int(parsed)
+    elif is_float(parsed):
+        return float(parsed)
+    else:
+        return arg
 
 
 if __name__ == '__main__':
