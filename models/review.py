@@ -6,10 +6,6 @@ class Review(BaseModel):
     """
     Represemts the review
     """
-    def __init__(self):
-        """
-        For initialization
-        """
-        place_id = ""
-        user_id = ""
-        text = ""
+    place_id = ""
+    user_id = ""
+    text = ""

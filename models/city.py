@@ -5,6 +5,4 @@ class City(BaseModel):
     """
     Represents all cities
     """
-    def __init__(self):
-        state_id = ""
-        name = ""
+    name = ""

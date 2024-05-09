@@ -6,8 +6,4 @@ class State(BaseModel):
     """
     Represents all the states
     """
-    def __init__(self):
-        """
-        For initialization
-        """
-        name = ""
+    name = ""

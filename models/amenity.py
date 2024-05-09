@@ -5,8 +5,4 @@ class Amenity(self):
     """
     Represents all amenities
     """
-    def __init__(self):
-        """
-        For initialization
-        """
-        name = ""
+    name = ""
